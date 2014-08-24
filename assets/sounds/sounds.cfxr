@@ -5,7 +5,7 @@
     <databaseInfo>
         <version>134481920</version>
         <UUID>CF4E3251-3541-4FC5-B16C-F025E165407E</UUID>
-        <nextObjectID>107</nextObjectID>
+        <nextObjectID>112</nextObjectID>
         <metadata>
             <plist version="1.0">
                 <dict>
@@ -134,6 +134,101 @@
         <attribute name="index" type="int32">6</attribute>
         <attribute name="highpassfiltercutoff" type="float">0.14454</attribute>
         <attribute name="decaytime" type="float">0.29634</attribute>
+        <attribute name="bitdepth" type="int16">16</attribute>
+        <attribute name="attacktime" type="float">0</attribute>
+    </object>
+    <object type="SOUND" id="z108">
+        <attribute name="wavetype" type="int16">0</attribute>
+        <attribute name="volume" type="float">50</attribute>
+        <attribute name="vibratospeed" type="float">-0.6902</attribute>
+        <attribute name="vibratodepth" type="float">-0.9976019</attribute>
+        <attribute name="sustaintime" type="float">0.4156616</attribute>
+        <attribute name="sustainpunch" type="float">0.02361755</attribute>
+        <attribute name="startfrequency" type="float">0.09909905</attribute>
+        <attribute name="squareduty" type="float">0.1095999</attribute>
+        <attribute name="slide" type="float">0.2675294</attribute>
+        <attribute name="samplerate" type="int32">44100</attribute>
+        <attribute name="repeatspeed" type="float">-0.2432</attribute>
+        <attribute name="rating" type="int16">0</attribute>
+        <attribute name="phasersweep" type="float">-0.05530633</attribute>
+        <attribute name="phaseroffset" type="float">2.438911e-05</attribute>
+        <attribute name="name" type="string">EmptyGun</attribute>
+        <attribute name="minfrequencycutoff" type="float">0</attribute>
+        <attribute name="lowpassfilterresonance" type="float">-0.2332</attribute>
+        <attribute name="lowpassfiltercutoffsweep" type="float">0.5846965</attribute>
+        <attribute name="lowpassfiltercutoff" type="float">0.9800313</attribute>
+        <attribute name="index" type="int32">7</attribute>
+        <attribute name="highpassfiltercutoffsweep" type="float">0.3042161</attribute>
+        <attribute name="highpassfiltercutoff" type="float">0.2384142</attribute>
+        <attribute name="dutysweep" type="float">0.1875421</attribute>
+        <attribute name="deltaslide" type="float">-0.3498065</attribute>
+        <attribute name="decaytime" type="float">-0.1209</attribute>
+        <attribute name="changespeed" type="float">0.1572</attribute>
+        <attribute name="changeamount" type="float">0.2072001</attribute>
+        <attribute name="bitdepth" type="int16">16</attribute>
+        <attribute name="attacktime" type="float">0.06593928</attribute>
+    </object>
+    <object type="SOUND" id="z109">
+        <attribute name="wavetype" type="int16">3</attribute>
+        <attribute name="volume" type="float">50</attribute>
+        <attribute name="sustaintime" type="float">0.09031</attribute>
+        <attribute name="startfrequency" type="float">0.41912</attribute>
+        <attribute name="slide" type="float">-0.48392</attribute>
+        <attribute name="samplerate" type="int32">44100</attribute>
+        <attribute name="rating" type="int16">0</attribute>
+        <attribute name="name" type="string">Hit Boss</attribute>
+        <attribute name="lowpassfiltercutoff" type="float">1</attribute>
+        <attribute name="index" type="int32">8</attribute>
+        <attribute name="highpassfiltercutoff" type="float">0.087</attribute>
+        <attribute name="decaytime" type="float">0.2984</attribute>
+        <attribute name="bitdepth" type="int16">16</attribute>
+        <attribute name="attacktime" type="float">0</attribute>
+    </object>
+    <object type="SOUND" id="z110">
+        <attribute name="wavetype" type="int16">0</attribute>
+        <attribute name="volume" type="float">50</attribute>
+        <attribute name="sustaintime" type="float">0.06576</attribute>
+        <attribute name="startfrequency" type="float">0.30704</attribute>
+        <attribute name="squareduty" type="float">0.01314</attribute>
+        <attribute name="slide" type="float">0.2538</attribute>
+        <attribute name="samplerate" type="int32">44100</attribute>
+        <attribute name="repeatspeed" type="float">0.501</attribute>
+        <attribute name="rating" type="int16">0</attribute>
+        <attribute name="name" type="string">Pick up power</attribute>
+        <attribute name="lowpassfiltercutoff" type="float">1</attribute>
+        <attribute name="index" type="int32">9</attribute>
+        <attribute name="decaytime" type="float">0.41048</attribute>
+        <attribute name="bitdepth" type="int16">16</attribute>
+        <attribute name="attacktime" type="float">0</attribute>
+    </object>
+    <object type="SOUND" id="z111">
+        <attribute name="wavetype" type="int16">3</attribute>
+        <attribute name="volume" type="float">50</attribute>
+        <attribute name="sustaintime" type="float">0.09599</attribute>
+        <attribute name="startfrequency" type="float">0.57314</attribute>
+        <attribute name="slide" type="float">-0.68328</attribute>
+        <attribute name="samplerate" type="int32">44100</attribute>
+        <attribute name="rating" type="int16">0</attribute>
+        <attribute name="name" type="string">Hit Player</attribute>
+        <attribute name="lowpassfiltercutoff" type="float">1</attribute>
+        <attribute name="index" type="int32">10</attribute>
+        <attribute name="decaytime" type="float">0.29278</attribute>
+        <attribute name="bitdepth" type="int16">16</attribute>
+        <attribute name="attacktime" type="float">0</attribute>
+    </object>
+    <object type="SOUND" id="z112">
+        <attribute name="wavetype" type="int16">3</attribute>
+        <attribute name="volume" type="float">50</attribute>
+        <attribute name="sustaintime" type="float">0.17257</attribute>
+        <attribute name="sustainpunch" type="float">0.49394</attribute>
+        <attribute name="startfrequency" type="float">0.1073218</attribute>
+        <attribute name="slide" type="float">0.17128</attribute>
+        <attribute name="samplerate" type="int32">44100</attribute>
+        <attribute name="rating" type="int16">0</attribute>
+        <attribute name="name" type="string">Player die</attribute>
+        <attribute name="lowpassfiltercutoff" type="float">1</attribute>
+        <attribute name="index" type="int32">11</attribute>
+        <attribute name="decaytime" type="float">0.48485</attribute>
         <attribute name="bitdepth" type="int16">16</attribute>
         <attribute name="attacktime" type="float">0</attribute>
     </object>

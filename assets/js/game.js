@@ -1,5 +1,9 @@
 (function() {
-  var Juego = { Preload: function() {}, Game: function() {} };
+  /*
+   * Your brain will suffer if you read this code "(:("
+   */
+
+  var Juego = { Preload: function() {}, Game: function() {}, Menu: function() {} };
   Juego.WIDTH  = 480;
   Juego.HEIGHT = 320;
 
@@ -11,8 +15,11 @@
       this.stage.backgroundColor = '#eee';
 
       this.load.image('background', 'assets/img/bg.png');
+      this.load.image('title', 'assets/img/title.png');
       this.load.image('ground', 'assets/img/ground.png');
+
       this.load.image('player', 'assets/img/player.png', 10, 10);
+      this.load.image('bullet', 'assets/img/bullet.png', 10, 10);
 
       this.load.spritesheet('players', 'assets/img/player-sprite.png', 20, 20, 8);
 
@@ -21,21 +28,30 @@
       this.load.image('platform-tierra', 'assets/img/platform-tierra.png', 10, 10);
       this.load.image('platform-agua', 'assets/img/platform-agua.png', 10, 10);
 
-      this.load.image('ataque-fuego', 'assets/img/ataque-fuego.png', 16, 18);
-      this.load.image('ataque-aire', 'assets/img/ataque-aire.png', 22, 14);
-      this.load.image('ataque-tierra', 'assets/img/ataque-tierra.png', 18, 18);
-      this.load.image('ataque-agua', 'assets/img/ataque-agua.png', 18, 18);
+      this.load.image('attack-fuego', 'assets/img/ataque-fuego.png', 16, 18);
+      this.load.image('attack-aire', 'assets/img/ataque-aire.png', 22, 14);
+      this.load.image('attack-tierra', 'assets/img/ataque-tierra.png', 18, 18);
+      this.load.image('attack-agua', 'assets/img/ataque-agua.png', 18, 18);
 
       this.load.image('boss-fuego', 'assets/img/gellon.png', 16, 18);
       this.load.image('boss-aire', 'assets/img/govil.png', 22, 14);
       this.load.image('boss-tierra', 'assets/img/madro.png', 18, 18);
       this.load.image('boss-agua', 'assets/img/poil.png', 18, 18);
 
+      this.load.image('power-fuego', 'assets/img/power-fuego.png', 14, 14);
+      this.load.image('power-aire', 'assets/img/power-aire.png', 14, 14);
+      this.load.image('power-tierra', 'assets/img/power-tierra.png', 14, 14);
+      this.load.image('power-agua', 'assets/img/power-agua.png', 14, 14);
 
       this.load.audio('jump', ['assets/sounds/jump.wav']);
       this.load.audio('fall', ['assets/sounds/fall.wav']);
       this.load.audio('music', ['assets/sounds/music.wav']);
       this.load.audio('shot', ['assets/sounds/shot.wav']);
+      this.load.audio('empty-gun', ['assets/sounds/empty-gun.wav']);
+      this.load.audio('hit-boss', ['assets/sounds/hit-boss.wav']);
+      this.load.audio('power', ['assets/sounds/power.wav']);
+      this.load.audio('hit-player', ['assets/sounds/hit-player.wav']);
+      this.load.audio('player-die', ['assets/sounds/player-die.wav']);
 
     },
     create: function() {
@@ -47,82 +63,147 @@
 
       // ?
       this.scale.setScreenSize(true);
+      this.game.add.audio('music', 1, true).play();
     },
     update: function() {
-      this.state.start('Game');
+      this.state.start('Menu');
     }
   }
+
+  Juego.Menu.prototype = {
+    create: function() {
+      this.add.sprite(0, 0, 'background');
+      this.ground = this.add.sprite(0, 296, 'ground');
+      this.title = this.add.sprite(0, 50, 'title');
+
+
+      this.startText = this.add.text(
+          this.world.centerX,
+          200,
+          "PRESS SPACE TO START",
+          {
+              font: "12px Arial",
+              fill: "#000",
+              align: "center"
+          }
+      );
+      this.startText.anchor.setTo(0.5, 0.5);
+      game.add.tween(this.startText).to({ y: 220 }, 1500).to({ y: 200 }, 1500).loop().start();
+    },
+    update: function() {
+      if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+        this.state.start('Game');
+      }
+    }
+  }
+
   Juego.Game.prototype = {
     create: function() {
       this.add.sprite(0, 0, 'background');
-      this.jumpSound = this.add.audio('jump');
-      this.fallSound = this.add.audio('fall');
-      this.shotSound = this.add.audio('step', 1, false);
+      this.ground = this.add.sprite(0, 296, 'ground');
 
-      this.game.add.audio('music', 1, true).play();
+      this.jumpSound      = this.add.audio('jump');
+      this.fallSound      = this.add.audio('fall');
+      this.shotSound      = this.add.audio('shot', 1, false);
+      this.emptyGunSound  = this.add.audio('empty-gun', 1, false);
+      this.hitBossSound   = this.add.audio('hit-boss', 1, false);
+      this.hitPlayerSound = this.add.audio('hit-player', 1, false);
+      this.grabPowerSound = this.add.audio('power', 1, false);
+      this.playerDieSound = this.add.audio('player-die', 1, false);
+      this.points         = 0;
 
 
       this.worlds = [
-        { name: 'fuego',  range: { min: 0, max: Juego.WIDTH / 4 } },
-        { name: 'aire',   range: {min: Juego.WIDTH/4, max: Juego.WIDTH/2 } },
-        { name: 'tierra', range: {min: Juego.WIDTH/2, max: Juego.WIDTH/4*3 } },
-        { name: 'agua',   range: {min: Juego.WIDTH/4*3, max: Juego.WIDTH } }
+        { name: 'fuego', weakness: 'agua', range: { min: 0, max: Juego.WIDTH / 4 } },
+        { name: 'aire',  weakness: 'tierra', range: {min: Juego.WIDTH/4, max: Juego.WIDTH/2 } },
+        { name: 'tierra', weakness: 'fuego', range: {min: Juego.WIDTH/2, max: Juego.WIDTH/4*3 } },
+        { name: 'agua', weakness: 'aire',  range: {min: Juego.WIDTH/4*3, max: Juego.WIDTH } }
       ];
 
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
-      this.ground = this.add.sprite(0, 296, 'ground');
       this.physics.enable(this.ground, Phaser.Physics.ARCADE);
       this.ground.body.immovable = true;
 
       this.addPlayer();
       this.addPlatforms();
       this.addBosses();
+      this.startBullets();
+      this.startPowers();
+      this.showPower();
+      this.pointsText = this.add.text(
+          10,
+          305,
+          "Points: 0",
+          {
+              font: "12px Arial",
+              fill: "#fff",
+              align: "left"
+          }
+      );
+
+      if(this.ghostUntil && this.ghostUntil < this.time.now) {
+        this.ghostUntil = null;
+        this.player.play('fly');
+      }
 
       this.cursors = cursors = game.input.keyboard.createCursorKeys();
       // this.time.events.loop(Phaser.Timer.SECOND * 2, this.moveHoles, this);
     },
     update: function() {
-      this.physics.arcade.collide(this.player, this.ground, function(){}, null, this);
-      this.physics.arcade.collide(this.player, this.platforms, function(){}, null, this);
+      if( ! this.player.alive) {
+        return;
+      }
 
-      this.player.body.velocity.x = 0;
-
-      if ( this.cursors.left.isDown ) {
-        this.player.body.velocity.x = -this.player.speed;
-
-        if(this.keySpace.isDown) {
-          this.player.animations.play('walkAndShot');
-          this.shotSound.play('', 0, 0.5, false, false);
-        } else {
-          this.player.animations.play('walk');
-        }
-        this.player.scale.setTo(-1, 1);
-      } else if(this.cursors.right.isDown) {
-        this.player.body.velocity.x = this.player.speed;
-
-        if(this.keySpace.isDown) {
-          this.player.animations.play('walkAndShot');
-          this.shotSound.play('', 0, 0.5, false, false);
-        } else {
-          this.player.animations.play('walk');
-        }
-        this.player.scale.setTo(1, 1);
+      if(this.player.x >= 0 && this.player.x <= 120) {
+        this.player.cuadrante = 0;
+      } else if( this.player.x > 120 && this.player.x <= 240) {
+        this.player.cuadrante = 1;
+      } else if( this.player.x > 240 && this.player.x <= 360) {
+        this.player.cuadrante = 2;
       } else {
-        this.player.animations.stop();
+        this.player.cuadrante = 3;
+      }
 
-        if(this.keySpace.isDown) {
-          this.player.frame = 4;
-        } else {
-          this.player.frame = 0;
+      this.physics.arcade.collide(this.player, this.ground, function(){}, null, this);
+      this.physics.arcade.collide(this.player, this.platforms, null, function(player, platform) {
+        if(player.body.velocity.y <= 0) {
+          return false;
         }
+        return true;
+      }, this);
+      this.physics.arcade.collide(this.player, this.powers, this.grabPower, null, this);
+      this.physics.arcade.collide(this.player, this.attacks, this.hitPlayer, null, this);
+
+
+      this.physics.arcade.collide(this.bullets, this.platforms, this.bulletHitsPlatform, null, this);
+      this.physics.arcade.collide(this.bosses, this.bullets, this.hitBoss, null, this);
+
+
+      this.inputManagment();
+      this.bossShoots();
+    },
+    fire: function() {
+      if(this.player.equipment == null ) {
+        this.emptyGunSound.play('', 5, 0.5, false, false);
+        return;
+      } else {
+        this.shotSound.play('', 5, 0.5, false, false);
       }
 
-      if (this.cursors.up.isDown && this.player.body.touching.down) {
-        this.player.body.velocity.y = -this.player.speed * 2;
-        this.player.body.lastPositionY = Juego.HEIGHT - this.player.body.y;
-        this.jumpSound.play();
+      if(this.nextShotAt > this.time.now) {
+        return;
       }
+
+      if(this.bullets.countDead() === 0) {
+        return;
+      }
+
+      this.nextShotAt = this.time.now + this.shotDelay;
+
+      var bullet = this.bullets.getFirstExists(false);
+      bullet.reset(this.player.x, this.player.y - 20);
+      bullet.body.velocity.y = -500;
     },
     addPlayer: function() {
       var cuadrante = this.getCuadrante(),
@@ -137,12 +218,26 @@
       this.player.body.gravity.y = 500;
 
       this.player.cuadrante = cuadrante;
+      this.player.equipment = null;
       this.player.speed = 120;
+      this.player.health = 5;
 
       this.player.animations.add('walk', [0,1,2,3], 15, true);
-      this.player.animations.add('walkAndShot', [4,5,6,7], 15, true);
+      this.player.animations.add('walkAndShoot', [4,5,6,7], 15, true);
+    },
+    hitPlayer: function(player, attack) {
+      attack.kill();
 
-      this.keySpace = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+      player.damage(1);
+      if(player.alive) {
+        this.hitPlayerSound.play('', 5, 0.5, false, false);
+      } else {
+        this.playerDieSound.play('', 5, 0.5, false, false);
+        player.kill();
+        game.time.events.add(2000, function(){
+          game.state.start('Menu');
+        });
+      }
     },
     getCuadrante: function() {
       var cuadrantes = [0, 1, 2, 3];
@@ -172,7 +267,6 @@
           game.physics.enable(platform, Phaser.Physics.ARCADE);
           platform.body.immovable = true;
 
-          // platform.speed = this.game.rnd.integerInRange(50, 80);
           var time = this.game.rnd.integerInRange(500, 2000);
           game.add.tween(platform.body).to({ x: max }, time).to({ x: min }, time).yoyo().loop().start();
         }
@@ -189,18 +283,186 @@
         max = world.range.max - game.cache.getImage('boss-' + world.name).width;
 
         boss = this.bosses.create(world.range.min, 25, 'boss-' + world.name);
+        boss.anchor.setTo(0.5, 0.5);
+        boss.name = world.name;
+        boss.health = 20;
 
         game.physics.enable(boss, Phaser.Physics.ARCADE);
-        platform.body.immovable = true;
+        boss.body.immovable = true;
+        boss.weakness = world.weakness;
 
         time = this.game.rnd.integerInRange(500, 2000);
         game.add.tween(boss.body).to({ x: max }, time).to({ x: min }, time).yoyo().loop().start();
       }
+
+
+      this.attacks = this.add.group();
+
+      this.attacks.enableBody = true;
+      this.attacks.physicsBodyType = Phaser.Physics.ARCADE;
+
+      this.attacks.createMultiple(3, 'attack-fuego');
+      this.attacks.createMultiple(3, 'attack-aire');
+      this.attacks.createMultiple(3, 'attack-tierra');
+      this.attacks.createMultiple(3, 'attack-agua');
+
+      this.attacks.setAll('anchor.x', 0.5);
+      this.attacks.setAll('anchor.y', 0.5);
+
+      this.attacks.setAll('outOfBoundsKill', true);
+      this.attacks.setAll('checkWorldBounds', true);
+
+      this.nextBossAttackAt = 0;
+      this.bossAttackDelay  = 800;
+    },
+    bulletHitsPlatform: function(bullet) {
+      bullet.kill();
+    },
+    bossShoots: function() {
+      if(this.nextBossAttackAt > this.time.now) {
+        return;
+      }
+
+      this.nextBossAttackAt = this.time.now + this.bossAttackDelay;
+
+      var boss = this.bosses.getAt(this.player.cuadrante), attack = null;
+
+      for (var i = 0; i < this.attacks.length; i++) {
+        if( attack == null ) {
+          attack = this.attacks.getAt(i);
+          if( attack.key.split('-')[1] != boss.name ) {
+            attack = null;
+          }
+        }
+      };
+
+      attack.reset(boss.x, boss.y + 30);
+      attack.body.velocity.y = 300;
+    },
+    grabPower: function(player, power) {
+      player.equipment = power.name;
+      power.kill();
+      this.grabPowerSound.play('', 5, 0.5, false);
+      this.addPoints(5);
+    },
+    hitBoss: function(boss, bullet) {
+      bullet.kill();
+      this.hitBossSound.play('', 5, 0.5, false);
+
+      if(this.player.equipment != boss.weakness) {
+        return;
+      }
+
+      boss.damage(1);
+      if(boss.alive) {
+        this.addPoints(10);
+      } else {
+        this.addPoints(100);
+        game.time.events.add(15000, function(){
+          boss.revive(20);
+        });
+      }
+    },
+    addPoints: function(points) {
+      this.points+= points;
+      this.pointsText.text = 'Points: ' + this.points;
+    },
+
+    startPowers: function() {
+      this.powers = this.add.group();
+
+      this.powers.enableBody = true;
+      this.powers.physicsBodyType = Phaser.Physics.ARCADE;
+
+      for(i = 0; i < 4; i++) {
+        world     = this.worlds[i];
+
+        min = world.range.min;
+
+        power = this.powers.create(120 * (i + 1) - 60, 80, 'power-' + world.name);
+        power.anchor.setTo(0.5, 0.5);
+        power.name = world.name;
+        game.physics.enable(power, Phaser.Physics.ARCADE);
+        power.body.immovable = true;
+        power.kill();
+      }
+    },
+    startBullets: function() {
+      this.bullets = this.add.group();
+
+      this.bullets.enableBody = true;
+      this.bullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+      this.bullets.createMultiple(100, 'bullet');
+      this.bullets.setAll('anchor.x', 0.5);
+      this.bullets.setAll('anchor.y', 0.5);
+
+      this.bullets.setAll('outOfBoundsKill', true);
+      this.bullets.setAll('checkWorldBounds', true);
+
+      this.nextShotAt = 0;
+      this.shotDelay  = 200;
+    },
+
+    inputManagment: function() {
+      this.player.body.velocity.x = 0;
+      keySpacePressed = this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR);
+
+      if ( this.cursors.left.isDown ) {
+        this.player.body.velocity.x = -this.player.speed;
+
+        if(keySpacePressed) {
+          this.player.animations.play('walkAndShoot');
+        } else {
+          this.player.animations.play('walk');
+        }
+        this.player.scale.setTo(-1, 1);
+      } else if(this.cursors.right.isDown) {
+        this.player.body.velocity.x = this.player.speed;
+
+        if(keySpacePressed) {
+          this.player.animations.play('walkAndShoot');
+        } else {
+          this.player.animations.play('walk');
+        }
+        this.player.scale.setTo(1, 1);
+      } else {
+        this.player.animations.stop();
+
+        if(keySpacePressed) {
+          this.player.frame = 4;
+        } else {
+          this.player.frame = 0;
+        }
+      }
+
+      if (this.cursors.up.isDown && this.player.body.touching.down) {
+        this.player.body.velocity.y = -this.player.speed * 2;
+        this.player.body.lastPositionY = Juego.HEIGHT - this.player.body.y;
+        this.jumpSound.play();
+      }
+
+      if(this.player.alive && keySpacePressed) {
+        this.fire();
+      }
+    },
+    showPower: function() {
+      this.game.time.events.loop(5000, function(powers, cuadrante) {
+        var cuadrantes = [0, 1, 2, 3];
+        cuadrantes.splice(cuadrante, 1);
+
+        powers.forEachAlive(function(power) {
+          power.kill();
+        });
+
+        powers.getRandom().revive();
+      }, null, this.powers);
     }
   }
 
   game.state.add('Preload', Juego.Preload);
   game.state.add('Game', Juego.Game);
+  game.state.add('Menu', Juego.Menu);
 
   game.state.start('Preload');
 
