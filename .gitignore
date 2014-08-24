@@ -1,0 +1,8 @@
+# Folders
+art/
+node_modules/
+bower_components/
+
+#
+Mongoose.app
+ideas.md

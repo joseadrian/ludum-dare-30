@@ -1,0 +1,23 @@
+{
+  "name": "ludum-dare-30",
+  "version": "0.0.1",
+  "authors": [
+    "Joseadrian <joseadrian@outlook.com>"
+  ],
+  "license": "MIT",
+  "homepage": "ç",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "install": {
+    "path": "assets/js/lib"
+  },
+  "devDependencies": {
+    "phaser": "~2.0.7"
+  }
+}
