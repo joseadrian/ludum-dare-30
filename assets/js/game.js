@@ -1,18 +1,45 @@
 (function() {
   /*
    * Your brain will suffer if you read this code "(:("
+   * Spanglish everywhere
    */
 
-  var Juego = { Preload: function() {}, Game: function() {}, Menu: function() {} };
+  var Juego = { Boot: function(){ }, Preload: function() {}, Game: function() {}, Menu: function() {} };
   Juego.WIDTH  = 480;
   Juego.HEIGHT = 320;
 
   var game = new Phaser.Game(Juego.WIDTH, Juego.HEIGHT, Phaser.AUTO, 'game');
+  Juego.Boot.prototype = {
+    preload: function() {
+      this.load.image('preloader', 'assets/img/preloader.png');
+    },
+    create: function() {
+      this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 
+      this.scale.minWidth = 480;
+      this.scale.minHeight = 320;
+      this.scale.maxWidth = 960;
+      this.scale.maxHeight = 640;
+      this.scale.forceLandscape = true;
+      this.scale.pageAlignHorizontally = true;
+      this.scale.setScreenSize(true);
+
+      this.state.start('Preload');
+    }
+  }
 
   Juego.Preload.prototype = {
     preload: function() {
-      this.stage.backgroundColor = '#eee';
+      this.stage.backgroundColor = '#000';
+
+      this.preloader = this.add.sprite(Juego.WIDTH/2, Juego.HEIGHT/2, 'preloader');
+      this.preloader.anchor.setTo(0.5, 0.5);
+
+      this.add.text(Juego.WIDTH/2, Juego.HEIGHT/2, "Loading...", { font: "10px monospace", fill: "#fff" })
+          .anchor
+          .setTo(0.5, 0.5);
+
+      this.load.setPreloadSprite(this.preloader);
 
       this.load.image('background', 'assets/img/bg.png');
       this.load.image('title', 'assets/img/title.png');
@@ -52,17 +79,9 @@
       this.load.audio('power', ['assets/sounds/power.wav']);
       this.load.audio('hit-player', ['assets/sounds/hit-player.wav']);
       this.load.audio('player-die', ['assets/sounds/player-die.wav']);
-
     },
     create: function() {
-      this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-
-      // Alinea canvas horizontalmente y verticalmente
-      this.scale.pageAlignHorizontally = true;
-      this.scale.pageAlignVertically   = true;
-
-      // ?
-      this.scale.setScreenSize(true);
+      this.preloader.cropEnabled = false;
       this.game.add.audio('music', 1, true).play();
     },
     update: function() {
@@ -80,7 +99,7 @@
       this.startText = this.add.text(
           this.world.centerX,
           200,
-          "PRESS SPACE TO START",
+          "PRESS Z TO START",
           {
               font: "12px Arial",
               fill: "#000",
@@ -91,7 +110,7 @@
       game.add.tween(this.startText).to({ y: 220 }, 1500).to({ y: 200 }, 1500).loop().start();
     },
     update: function() {
-      if(this.game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+      if(this.game.input.keyboard.isDown(Phaser.Keyboard.Z)) {
         this.state.start('Game');
       }
     }
@@ -434,12 +453,12 @@
 
     inputManagment: function() {
       this.player.body.velocity.x = 0;
-      keySpacePressed = this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR);
+      keyZPressed = this.input.keyboard.isDown(Phaser.Keyboard.Z);
 
       if ( this.cursors.left.isDown ) {
         this.player.body.velocity.x = -this.player.speed;
 
-        if(keySpacePressed) {
+        if(keyZPressed) {
           this.player.animations.play('walkAndShoot');
         } else {
           this.player.animations.play('walk');
@@ -448,7 +467,7 @@
       } else if(this.cursors.right.isDown) {
         this.player.body.velocity.x = this.player.speed;
 
-        if(keySpacePressed) {
+        if(keyZPressed) {
           this.player.animations.play('walkAndShoot');
         } else {
           this.player.animations.play('walk');
@@ -457,7 +476,7 @@
       } else {
         this.player.animations.stop();
 
-        if(keySpacePressed) {
+        if(keyZPressed) {
           this.player.frame = 4;
         } else {
           this.player.frame = 0;
@@ -470,7 +489,7 @@
         this.jumpSound.play();
       }
 
-      if(this.player.alive && keySpacePressed) {
+      if(this.player.alive && keyZPressed) {
         this.fire();
       }
     },
@@ -491,7 +510,8 @@
   game.state.add('Preload', Juego.Preload);
   game.state.add('Game', Juego.Game);
   game.state.add('Menu', Juego.Menu);
+  game.state.add('Boot', Juego.Boot);
 
-  game.state.start('Preload');
+  game.state.start('Boot');
 
 })();
