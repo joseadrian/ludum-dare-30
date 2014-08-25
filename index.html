@@ -1,15 +1,28 @@
 <!doctype html>
 <html>
 <head>
-  <title>F.A.T.A.</title>
+  <title>F.A.T.A. | Ludum Dare 30</title>
 
   <script src="assets/js/lib/phaser/phaser.js"></script>
   <style>
-  body{ margin: 0; }
+  body{ margin: 0; font-family: Tahoma, Verdana, Arial; font-size: 16px; }
+  #instrucciones{  width:480px; margin: 0 auto; }
   </style>
 </head>
 <body>
   <div id="game"></div>
+  <div id="instrucciones">
+    <p>
+      You move using arrow keys and you shoot with Z key. To kill a monster you need to get some items. These appear below the monsters. Infinite bullets.
+    </p>
+    <p>
+      Once you kill a monster, this revives after 15 seconds.
+    </p>
+    <li>Water kills fire</li>
+    <li>Fire kills Earth</li>
+    <li>Earth kills Air</li>
+    <li>Air kills Water</li>
+  </div>
   <script src="assets/js/game.js"></script>
 </body>
 </html>
