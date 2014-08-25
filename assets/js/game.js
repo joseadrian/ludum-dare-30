@@ -114,10 +114,10 @@
 
 
       this.worlds = [
-        { name: 'fuego', weakness: 'agua', range: { min: 0, max: Juego.WIDTH / 4 } },
-        { name: 'aire',  weakness: 'tierra', range: {min: Juego.WIDTH/4, max: Juego.WIDTH/2 } },
-        { name: 'tierra', weakness: 'fuego', range: {min: Juego.WIDTH/2, max: Juego.WIDTH/4*3 } },
-        { name: 'agua', weakness: 'aire',  range: {min: Juego.WIDTH/4*3, max: Juego.WIDTH } }
+        { name: 'fuego', weakness: 'agua', color: '#fff', range: { min: 0, max: Juego.WIDTH / 4 } },
+        { name: 'aire',  weakness: 'tierra', color: '#000', range: {min: Juego.WIDTH/4, max: Juego.WIDTH/2 } },
+        { name: 'tierra', weakness: 'fuego', color: '#fff', range: {min: Juego.WIDTH/2, max: Juego.WIDTH/4*3 } },
+        { name: 'agua', weakness: 'aire', color: '#fff', range: {min: Juego.WIDTH/4*3, max: Juego.WIDTH } }
       ];
 
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -131,16 +131,19 @@
       this.startBullets();
       this.startPowers();
       this.showPower();
+
       this.pointsText = this.add.text(
-          10,
-          305,
-          "Points: 0",
+          Juego.WIDTH/2,
+          Juego.HEIGHT - 40,
+          "P: 0 H: 100%",
           {
-              font: "12px Arial",
-              fill: "#fff",
-              align: "left"
+              font: "30px Arial",
+              fill: "#000",
+              align: "center"
           }
       );
+      this.pointsText.anchor.setTo(0.5, 0.5);
+      this.pointsText.alpha = 0.1;
 
       if(this.ghostUntil && this.ghostUntil < this.time.now) {
         this.ghostUntil = null;
@@ -229,6 +232,7 @@
       attack.kill();
 
       player.damage(1);
+      this.updateHUD(0);
       if(player.alive) {
         this.hitPlayerSound.play('', 5, 0.5, false, false);
       } else {
@@ -276,6 +280,8 @@
       var world, min, max, boss, time;
 
       this.bosses = this.add.group();
+      this.bossesHealth = {};
+
       for(i = 0; i < 4; i++) {
         world     = this.worlds[i];
 
@@ -285,7 +291,7 @@
         boss = this.bosses.create(world.range.min, 25, 'boss-' + world.name);
         boss.anchor.setTo(0.5, 0.5);
         boss.name = world.name;
-        boss.health = 20;
+        boss.health = 10;
 
         game.physics.enable(boss, Phaser.Physics.ARCADE);
         boss.body.immovable = true;
@@ -293,6 +299,18 @@
 
         time = this.game.rnd.integerInRange(500, 2000);
         game.add.tween(boss.body).to({ x: max }, time).to({ x: min }, time).yoyo().loop().start();
+
+        this.bossesHealth[world.name] = this.add.text(
+            min + 60,
+            305,
+            "100%",
+            {
+                font: "10px Arial",
+                fill: world.color,
+                align: "left"
+            }
+        );
+        this.bossesHealth[world.name].anchor.setTo(0.5, 0)
       }
 
 
@@ -327,6 +345,10 @@
 
       var boss = this.bosses.getAt(this.player.cuadrante), attack = null;
 
+      if( ! boss.alive) {
+        return;
+      }
+
       for (var i = 0; i < this.attacks.length; i++) {
         if( attack == null ) {
           attack = this.attacks.getAt(i);
@@ -343,7 +365,7 @@
       player.equipment = power.name;
       power.kill();
       this.grabPowerSound.play('', 5, 0.5, false);
-      this.addPoints(5);
+      this.updateHUD(5);
     },
     hitBoss: function(boss, bullet) {
       bullet.kill();
@@ -353,19 +375,25 @@
         return;
       }
 
+
       boss.damage(1);
+      this.bossesHealth[boss.name].text = (boss.health * 10) + '%';
+
       if(boss.alive) {
-        this.addPoints(10);
+        this.updateHUD(10);
       } else {
-        this.addPoints(100);
+        this.updateHUD(100);
+
+        var bossesHealth = this.bossesHealth;
         game.time.events.add(15000, function(){
           boss.revive(20);
+          bossesHealth[boss.name].text = '100%';
         });
       }
     },
-    addPoints: function(points) {
+    updateHUD: function(points) {
       this.points+= points;
-      this.pointsText.text = 'Points: ' + this.points;
+      this.pointsText.text = 'P: ' + this.points + ' H: ' + (20 * this.player.health + '%');
     },
 
     startPowers: function() {
