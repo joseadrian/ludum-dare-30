@@ -1,4 +1,4 @@
-# F.A.T.A.
+# F.A.T.A. [Play it!](http://joseadrian.github.io/ludum-dare-30/)
 
 ![Preview](preview.png)
 
